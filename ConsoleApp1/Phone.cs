@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ConsoleApp1
@@ -10,16 +12,30 @@ namespace ConsoleApp1
     {
         public string Model { get; set; }
         public string Price { get; set; }
-
-        public void Call(string number)
+        private bool IsCalling { get; set; }
+        public void CallTo(string number)
         {
-            Dialing(number);
-        }
+            if (!IsCalling)
+            {
+                IsCalling = true;
+            }
 
-        private void Dialing(string number) { }
+            for (int i = 0; i < 5; i++)
+            {
+                Thread.Sleep(1000);
+                Caling (this,new CallingEventArgs(
+                    string.Format("Длительность разговора {0} секунд",i)));
+            }    
+
+        }
+        public void HangUp(string number)
+        {
+            IsCalling = false;
+        }
+        public event EventHandler<CallingEventArgs> Caling;
     }
 
-    public class PhoneWithCamera : Phone
+    public class PhoneWithCamera : Phone, ICloneable
     {
         public Photo Photo { get; set; }
         public void MakePhoto()
@@ -27,6 +43,12 @@ namespace ConsoleApp1
             Photo photo = GetPhoto();
             SavePhoto(photo);
         }
+
+        public object Clone()
+        {
+            return this.MemberwiseClone();
+        }
+
         private Photo GetPhoto()
         {
             return new Photo();
@@ -63,5 +85,14 @@ namespace ConsoleApp1
             Weight = 1920;
         }
 
+    }
+
+    public class CallingEventArgs : EventArgs
+    {
+        public CallingEventArgs(string message)
+        {
+            Message = message;
+        }
+        public string Message { get; private set; }
     }
 }
